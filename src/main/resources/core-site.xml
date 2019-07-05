@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+	<property>
+		<name>fs.defaultFS</name>
+		<value>hdfs://mycluster</value>
+	</property>
+	<property>
+		<name>hadoop.tmp.dir</name>
+		<value>/data/centos/hadoop</value>
+	</property>
+	<property>
+		<name>hadoop.zookeeper.quorum</name>
+		<value>185.2.81.153:2181</value>
+	</property>
+</configuration>
+

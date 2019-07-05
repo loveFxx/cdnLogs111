@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport"
+		content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+	<meta name="description" content="" />
+	<meta name="author" content="ThemeBucket" />
+	<link rel="shortcut icon" href="#" type="image/png"></link>
+	<meta charset="UTF-8" />
+	<title>Client Logs</title>
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css"
+		href="jquery-easyui-1.6.4/themes/bootstrap/easyui.css" />
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/bootstrap-dropdown.js"></script>
+	<script type="text/javascript"
+		src="jquery-easyui-1.6.4/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="js/datagrid-detailview.js"></script>
+	<script type="text/javascript" src="js/stomp.js"></script>
+	<script type="text/javascript" src="js/sockjs.min.js"></script>
+	<script type="text/javascript" src="js/datagrid-filter.js"></script>
+<style type="text/css">
+#table_width {
+	width: 98%;
+}
+
+.datagrid-cell {
+	text-overflow:ellipsis;           
+}
+
+.floatLayer {
+	width: 100%;
+	height: 100%;
+	position: fixed;
+	background: #000;
+	z-index: 9990;
+	top: 0px;
+	left: 0px;
+	filter: alpha(Opacity = 50);
+	-moz-opacity: 0.50;
+	opacity: 0.50;
+}
+
+.liadloging {
+	width: 300px;
+	height: auto;
+	position: absolute;
+	top: 35%;
+	left: 40%;
+	z-index: 9995;
+}
+
+.ldl_Conten {
+	width: 300px;
+	height: 200px;
+	line-height: 100px;
+	overflow: hidden;
+	text-align: center;
+}
+
+.ldl_Conten img {
+	width: 200px;
+	 height: 120px;
+	line-height: 100px;
+	display: block;
+	float: left;
+	margin: -39px 0px;
+	background-size: 60px 20px;
+	filter: chroma(color = #ffffff);
+}
+</style>
+</head>
+<body class="sticky-header">
+	<section>
+		<div th:include="header::header"></div>
+		<div class="container" id='table_width'>
+			<div id="toolbar" class="btn-group">
+				<form class="form-inline">
+					<div class="form-group">
+						<select id="sn_filter" class="form-control" onchange="querySn()">
+							<option value="0">All</option>
+							<option value="2">Only Exception</option>
+						</select>
+						<input type="text" id="sn" name="searchUserName"
+							class="form-control searchbyname-input"
+							placeholder="Please enter the search SN" size="30%" />
+						<input type="text" id="idStr" name="searchThreeId"
+							class="form-control searchbyname-input"
+							placeholder="Please enter the search id(e.g:pid,mid,cid)" size="42%" />
+						<button id="btn_search" type="button"
+							class="btn btn-default searchbyname-button" value="search"
+							onclick="querySn()">
+							<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+						</button>
+						<button id="btn_search" type="button"
+							class="btn btn-default searchbyname-button"
+							onclick="resetFilter()">Clear
+						</button>
+						<button type="button" class="form-control btn btn-default" onClick="modifyTimes()">
+ 							<span class="glyphicon glyphicon-time" aria-hidden="true"></span><span id="queryTime"> All</span>
+						</button>
+						<button type="button" class="form-control btn btn-default" onClick="modifyPush()">Push</button>
+						<div id="pushPicker" class="form-control" style="overflow: hidden;">
+							<input type="text" id="uploadSN" name="uploadSN"
+							class="form-control searchbyname-input"
+							placeholder="Please enter the Upload SN" size="30%" />
+							<div class="input-group" style="width:100%">
+	            				<input id="frequency" type="text" placeholder="Please enter the Frequency"  class="form-control" />
+	            				<span style="width:80px" class="input-group-addon">seconds</span>
+	        				</div>
+	        				<div class="input-group" style="width:100%">
+	            				<input id="times" type="text" placeholder="Please enter the Times"  class="form-control" />
+	            				<span style="width:80px" class="input-group-addon">times</span>
+	        				</div>
+	        				<input class="btn btn-primary searchbyname-button" onClick="push()" type="button" value="GO" style="position: absolute;right: 10px;bottom: 10px;width:150px" />
+						</div>
+						<button id="btn_search" type="button"
+							class="btn btn-default searchbyname-button" value="search"
+							onclick="querySnWebSocket()">
+							<span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+						</button>
+						<div id="datetimePicker" class="form-control" style="overflow: hidden;">
+							<div class="easyui-tabs">
+								<div title="Quick">
+									<ul class="nav nav-sidebar">
+										<li><a href="javascript:void(0)" onClick="setqueryTime(this)">All</a></li>
+										<li><a href="javascript:void(0)" onClick="setqueryTime(this)">This hour</a></li>
+										<li><a href="javascript:void(0)" onClick="setqueryTime(this)">Today</a></li>
+										<li><a href="javascript:void(0)" onClick="setqueryTime(this)">Yesterday</a></li>
+										<li><a href="javascript:void(0)" onClick="setqueryTime(this)">This Week</a></li>
+										<li><a href="javascript:void(0)" onClick="setqueryTime(this)">This Month</a></li>
+										<li><a href="javascript:void(0)" onClick="setqueryTime(this)">This Year</a></li>
+									</ul>
+								</div>
+								<div title="Absolute">
+									<div>
+										<ul class="nav nav-sidebar">
+											<li style="display: inline-block;width:240px;"><span style="font-weight: bold;">From</span><span style="position: absolute;right: 10px"><a href="javascript:void(0)" onClick="setFromTimeToNow()">Set To Now</a></span></li>
+											<li style="display: inline-block;width:240px;"><span style="font-weight: bold;">To</span><span style="position: absolute;right: 10px"><a href="javascript:void(0)" onClick="setToTimeToNow()">Set To Now</a></span></li>
+										</ul>
+									</div>
+									<div class="form-group" style="height: 34px;margin-bottom: 0px">
+										<input id="fromTime" class="form-group searchbyname-input" onBlur="setFromDateTimeOnBlur()" style="width:240px;height: 34px" />
+										<input id="toTime" class="form-group searchbyname-input" onBlur="setToDateTimeOnBlur()" style="width:240px;height: 34px" />
+									</div>
+									<div id="fromDate" style="width:240px;display: inline-block;" ></div>
+									<div id="toDate" style="width:240px;display: inline-block;"></div>
+									<input class="btn btn-primary searchbyname-button" onClick="setqueryTimeWhenTimeRange()" type="button" value="GO" style="position: absolute;right: 10px;bottom: 10px;width:150px" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<table id="table"></table>
+		</div>
+		<div id="liadloging" style="display: none;">
+			<div id="ldl_Conten">
+				        <img src="images/loading.gif" />        
+			</div>
+		</div>
+		<div id="floatLayer"></div> 
+	</section>
+	<script type="text/javascript" src="js/index.js"></script>
+	<script type="text/javascript">
+	$('#cdn_logs').css('color','#337ab7')
+	$('#client_logs').css('color','red')
+	$('#cms_logs').css('color','#337ab7')
+	$('#cdn_admin_monitor').css('color','#337ab7')
+		function lockHTML(){
+			$('#liadloging').css('display','block');
+			$("#floatLayer").addClass("floatLayer");
+			$("#liadloging").addClass("liadloging");
+			$("#ldl_Conten").addClass("ldl_Conten");
+		}
+		
+		function unlockHTML(){
+			$('#liadloging').css('display','none');
+			$("#floatLayer").removeClass("floatLayer");
+			$("#liadloging").removeClass("liadloging");
+			$("#ldl_Conten").removeClass("ldl_Conten");
+		}
+		
+		$('#pushPicker').dialog({
+			title : 'Push',
+			width : 300,
+			height : 200,
+			closed : true,
+			resizable : true,
+		});
+		
+		function resetFilter(){
+			$('#sn').val('');
+			$('#uploadSN').val('');
+			$('#idStr').val('');
+			$('#queryTime').text(' All');
+			$('#sn_filter').get(0).selectedIndex=0; 
+		}
+		
+		function modifyPush(){
+			var pushPicker = $('#pushPicker');
+			if(pushPicker.parent().is(":hidden")){
+				pushPicker.dialog('open');
+				$('#times').val('10');
+				$('#frequency').val('60');
+			}else{
+				pushPicker.dialog('close');
+			}
+		}
+		
+		$('#table').datagrid({
+			title:'Client - Logs',
+			height:800,
+			fitColumns:true,
+			singleSelect:true,
+			striped: true,
+			pagination:true,
+			sortName:'sendTime',
+			sortOrder: 'desc',
+			pageSize: 10,
+			pageNumber: 1,
+			pageList: [10,20,30,40,50],
+			queryParams: {
+				sn : $("#sn").val(),
+			},
+			url:'findClientLogs',
+			columns:[[
+				{field:'userId',title:'SN',width:60,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = row.isException;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/},
+				{field:'sendTime',title:'Send Time',width:60,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/},
+				{field:'apkVersion',title:'Apk Version',width:80,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}	
+					/*]]>*/},
+				{field:'devicePlatform',title:'Device Platform',width:60,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/},
+				{field:'systemVersion',title:'System Version',width:80,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/},
+				{field:'pid',title:'pid',width:40,
+						/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/},
+				{field:'mid',title:'mid',width:40,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+						/*]]>*/},
+				{field:'cid',title:'cid',width:40,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/},
+				{field:'totalCpu',title:'Total Cpu',width:40,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/},
+				{field:'ftvCpu',title:'ftv Cpu',width:40,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var ftvCpu = row.ftvCpu.split('%')[0];
+						var isException = 0;
+						if(ftvCpu>10){
+							var isException = row.isException;
+						}
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/},
+				{field:'totalMemory',title:'Total Memory',width:40,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/},
+				{field:'freeMemory',title:'Free Memory',width:40,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/},
+				{field:'ftvMemory',title:'ftv Memory',width:40,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						var ftvMemory = row.ftvMemory.split('M')[0];
+						if(ftvMemory>150){
+							isException = row.isException;
+						}
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/},
+				{field:'pingResult',title:'ping Result',width:40,
+					/*<![CDATA[*/
+					formatter : function(value, row, index) {
+						var isException = 0;
+						return getTitleExpandFFWhenClientLogs(isException,value);
+					}
+					/*]]>*/}
+			]],
+			view: detailview,
+			detailFormatter: function(rowIndex, rowData){
+				return '<div><table id="ddv-'+rowIndex+'_2" ></table><table id="ddv-' + rowIndex + '" ></table></div>';
+			},
+			onExpandRow: function(index,row){
+				var programview = $(this).datagrid('getRowDetail',index).find('#ddv-'+index);
+				var loginview = $(this).datagrid('getRowDetail',index).find('#ddv-'+index+'_2');
+				loginview.datagrid({
+					title:'ClientLogs - Login',
+					singleSelect:true,
+					url:'getLoginList',
+					queryParams: {
+						id: row.id
+					},
+					columns:[[
+						{
+							field:'requestName',
+							title:'Request Name',
+							width:'10%',
+							/*<![CDATA[*/
+							formatter : function(value2, row2, index2) {
+								return getTitleExpandFFWhenLogin(row2,value2);
+							}
+							/*]]>*/
+						},{
+							field:'url',
+							title:'url',
+							width:'60%',
+							/*<![CDATA[*/
+							formatter : function(value2, row2, index2) {
+								return getTitleExpandFFWhenLogin(row2,value2);
+							}
+							/*]]>*/
+						},{
+							field:'startTime',
+							title:'Start Time',
+							width:'12%',
+							/*<![CDATA[*/
+							formatter : function(value2, row2, index2) {
+								return getTitleExpandFFWhenLogin(row2,value2);
+							}
+							/*]]>*/
+						},{
+							field:'endTime',
+							title:'End Time',
+							width:'12%',
+							/*<![CDATA[*/
+							formatter : function(value2, row2, index2) {
+								return getTitleExpandFFWhenLogin(row2,value2);
+							}
+							/*]]>*/
+						},{
+							field:'returnCode',
+							title:'ReturnCode',
+							width:'6%',
+							/*<![CDATA[*/
+							formatter : function(value2, row2, index2) {
+								return getTitleExpandFFWhenLogin(row2,value2);
+							}
+							/*]]>*/
+						}
+					]],onDblClickCell:function (index, field,value) {
+		            	var td = $(this).parent().find('.datagrid-view2 .datagrid-body tr').eq(index).find('td')
+		            	for (var i in td ) {
+		            		if (td.eq(i).attr('field') == field) {
+		            			var row = td.eq(i).find('span');
+								dataCopy(row);
+		            		}
+		            	}
+		            },
+					onResize:function(){
+						$('#table').datagrid('fixDetailRowHeight',index);
+					},
+					onLoadSuccess:function(){     		      
+						setTimeout(function () {
+							$('#table').datagrid('fixDetailRowHeight',index);
+							$('#table').datagrid('fixRowHeight',index);
+						}, 0);
+					},
+					onCollapseRow: function(index2,row2){//严重注意喔
+						var ddv_2 = $(this).datagrid('getRowDetail',index2).find('#ddv-'+index2+'_2');
+						ddv_2.datagrid({
+							onResize:function(){
+								loginview.datagrid('fixDetailRowHeight',index2);
+								$('#table').datagrid('fixDetailRowHeight',index);
+							}
+						});//严重注意喔
+						loginview.datagrid('fixDetailRowHeight',index2);
+						$('#table').datagrid('fixDetailRowHeight',index);
+					},
+				});
+				$('#table').datagrid('fixDetailRowHeight',index);
+				programview.datagrid({
+					title:'ClientLogs - Program',
+					url:'getProgramList',
+					singleSelect:true,
+					fitColumns:true,
+					queryParams: {
+						id: row.id
+
+					},
+					columns:[[
+						{
+							field:'name',
+							title:'Name',
+							width:'98%',
+						}
+					]],
+					view: detailview,
+					detailFormatter: function(rowIndex, rowData){
+						return '<div><table id="ddv-program-' + rowIndex + '" ></table></div>';
+					},
+					onResize:function(){
+						$('#table').datagrid('fixDetailRowHeight',index);
+					},
+					onLoadSuccess:function(){     		      
+						setTimeout(function () {
+							$('#table').datagrid('fixDetailRowHeight',index);
+							$('#table').datagrid('fixRowHeight',index);
+						}, 0);
+					},
+					onCollapseRow: function(index2,row2){//严重注意喔
+						var ddv_2 = $(this).datagrid('getRowDetail',index2).find('#ddv-'+index2);
+						ddv_2.datagrid({
+							onResize:function(){
+								programview.datagrid('fixDetailRowHeight',index2);
+								$('#table').datagrid('fixDetailRowHeight',index);
+							}
+						});//严重注意喔
+						programview.datagrid('fixDetailRowHeight',index2);
+						$('#table').datagrid('fixDetailRowHeight',index);
+					},
+					onExpandRow: function(index2,row2){
+						var ddv_program = $(this).datagrid('getRowDetail',index2).find('#ddv-program-'+index2);
+						ddv_program.datagrid({
+							title:'Program - VideoInfo',
+							url:'getVideoInfoList',
+							singleSelect:true,
+							fitColumns:true,
+							queryParams: {
+								id: row2.id
+							},columns:[[{
+									field:'playurl',
+									title:'Play Url',
+									width:'29%',
+									/*<![CDATA[*/
+									formatter : function(value3, row3, index3) {
+										var isException = 0;
+										return getTitleExpandFFWhenClientLogs(isException,value3);
+									}
+									/*]]>*/
+								},{
+									field:'cdnAddress',
+									title:'CDN Address',
+									width:'10%',
+									/*<![CDATA[*/
+									formatter : function(value3, row3, index3) {
+										var isException = 0;
+										return getTitleExpandFFWhenClientLogs(isException,value3);
+									}
+									/*]]>*/
+								},{
+									field:'speed',
+									title:'Speed',
+									width:'5%',
+									/*<![CDATA[*/
+									formatter : function(value3, row3, index3) {
+										var isException = 0;
+										return getTitleExpandFFWhenClientLogs(isException,value3);
+									}
+									/*]]>*/
+								},{
+									field:'resolution',
+									title:'Resolution',
+									width:'6%',
+									/*<![CDATA[*/
+									formatter : function(value3, row3, index3) {
+										var isException = 0;
+										return getTitleExpandFFWhenClientLogs(isException,value3);
+									}
+									/*]]>*/
+								},{
+									field:'videoFormat',
+									title:'Video Format',
+									width:'6%',
+									/*<![CDATA[*/
+									formatter : function(value3, row3, index3) {
+										var isException = 0;
+										return getTitleExpandFFWhenClientLogs(isException,value3);
+									}
+									/*]]>*/
+								},{
+									field:'audioFormat',
+									title:'Audio Format',
+									width:'6%',
+									/*<![CDATA[*/
+									formatter : function(value3, row3, index3) {
+										var isException = 0;
+										return getTitleExpandFFWhenClientLogs(isException,value3);
+									}
+									/*]]>*/
+								},{
+									field:'startSwitchTime',
+									title:'Start Switch Time',
+									width:'10%',
+								/*<![CDATA[*/
+									formatter : function(value3, row3, index3) {
+										var isException = 0;
+										return getTitleExpandFFWhenClientLogs(isException,value3);
+									}
+								/*]]>*/
+								},{
+									field:'startSetDataSourceTime',
+									title:'Start SetDataSource Time',
+									width:'10%',
+									/*<![CDATA[*/
+									formatter : function(value3, row3, index3) {
+										var isException = 0;
+										return getTitleExpandFFWhenClientLogs(isException,value3);
+									}
+								/*]]>*/
+								},{
+									field:'startPlayTime',
+									title:'Start Play Time',
+									width:'10%',
+									/*<![CDATA[*/
+									formatter : function(value3, row3, index3) {
+										var isException = 0;
+										return getTitleExpandFFWhenClientLogs(isException,value3);
+									}
+								/*]]>*/
+								},{
+									field:'playErrorCode',
+									title:'Play ErrorCode',
+									width:'7%',
+									/*<![CDATA[*/
+									formatter : function(value3, row3, index3) {
+										var isException = 0;
+										if(row3.playErrorCode.split(':').length>1){
+											isException = -1;
+										}
+										return getTitleExpandFFWhenClientLogs(isException,value3);
+									}
+								/*]]>*/
+							}]],onDblClickCell:function (index, field, value) {
+				            	var td = $(this).parent().find('.datagrid-view2 .datagrid-body tr').eq(index).find('td')
+				            	for (var i in td ) {
+				            		if (td.eq(i).attr('field') == field) {
+				            			var row = td.eq(i).find('span');
+										dataCopy(row);
+				            		}
+				            	}
+				            },
+							onResize:function(){
+								programview.datagrid('fixDetailRowHeight',index2);
+								$('#table').datagrid('fixDetailRowHeight',index)
+							},
+							onLoadSuccess:function(){ 
+								setTimeout(function () {
+									programview.datagrid('fixDetailRowHeight',index2);
+									programview.datagrid('fixRowHeight',index2);
+									$('#table').datagrid('fixDetailRowHeight',index)
+									$('#table').datagrid('fixRowHeight',index)
+								}, 0);
+							}
+						});
+						programview.datagrid('fixDetailRowHeight',index2);
+					}
+				});
+			}
+		});
+
+		$('#table').datagrid('enableFilter');
+		
+		function querySnWebSocket(){
+			$('#table').datagrid('reload', {
+				sn : $("#uploadSN").val(),
+				sn_filter : 1
+			});
+		}
+
+		/*<![CDATA[*/
+		function querySn() {
+			var queryTime = $('#queryTime').text();
+			var date = new Date();
+			var startTime;
+			var endTime;
+			if(queryTime==' Today'){
+				endTime = getStrByDate(date);
+				date.setHours(0);
+				date.setMinutes(0);
+				date.setSeconds(0);
+				startTime = getStrByDate(date);
+			}else if(queryTime== ' This hour'){
+				endTime = getStrByDate(date);
+				date.setMinutes(0);
+				date.setSeconds(0);
+				startTime = getStrByDate(date);
+			}else if(queryTime== ' All'){
+				startTime = 0;
+				endTime = 0;
+			}else if(queryTime== ' Yesterday'){
+				if(date.getDate()!=1){
+					date.setDate(date.getDate()-1);
+				}else {
+					date.setMonth(date.getMonth());
+					date.setDate(0);
+				}
+				date.setHours(23);
+				date.setMinutes(59);
+				date.setSeconds(59);
+				endTime = getStrByDate(date);
+				date.setHours(0);
+				date.setMinutes(0);
+				date.setSeconds(0);
+				startTime = getStrByDate(date);
+			}else if(queryTime== ' This Week'){
+				endTime = getStrByDate(date);
+				if(date.getDate()>date.getDay()){
+					date.setDate(date.getDate()-date.getDay());
+				}else {
+					var days = date.getDay();
+					var monthDay = date.getDate();
+					date.setMonth(date.getMonth());
+					date.setDate(0);
+					date.setDate(date.getDate()-(days-monthDay));
+				}
+				date.setHours(0);
+				date.setMinutes(0);
+				date.setSeconds(0);
+				startTime = getStrByDate(date);
+			}else if(queryTime== ' This Month'){
+				endTime = getStrByDate(date);
+				date.setDate(1)
+				date.setHours(0);
+				date.setMinutes(0);
+				date.setSeconds(0);
+				startTime = getStrByDate(date);
+			}else if(queryTime== ' This Year'){
+				endTime = getStrByDate(date);
+				date.setMonth(0);
+				date.setDate(1)
+				date.setHours(0);
+				date.setMinutes(0);
+				date.setSeconds(0);
+				startTime = getStrByDate(date);
+			}else{
+				var fromTimeStr = $('#fromTime').val();
+				startTime = fromTimeStr;
+				var toTimeStr = $('#toTime').val();
+				endTime = toTimeStr;
+			}
+			if(startTime!=0&&endTime!=0){
+				if(new Date(getDateByStr(startTime)).getTime()>new Date(getDateByStr(endTime)).getTime()){
+					alert('开始时间不能大于结束时间！！！');
+					return ;
+				}
+			}
+			$('#table').datagrid('reload', {
+				sn : $("#sn").val(),
+				startTime : startTime,
+				endTime : endTime,
+				sn_filter : $('#sn_filter option:selected').val(),
+				idStr : $('#idStr').val()
+			});
+		}
+		/*]]>*/
+		
+		var fromTime = new Date();
+		var toTime = new Date();
+		
+		$('#datetimePicker').dialog({
+			title : "Time Range",
+			width : 500,
+			height : 350,
+			closed : true,
+			resizable : true,
+			left : 754,
+			top : 146,
+		});
+		
+		function modifyTimes(){
+			var datetimePicker = $('#datetimePicker');
+			if(datetimePicker.parent().is(":hidden")){
+				datetimePicker.dialog('open');
+				fromTime = new Date();
+				toTime = new Date();
+			}else{
+				datetimePicker.dialog('close');
+			}
+		}
+		
+		/*<![CDATA[*/
+		function createFromDate(){
+			$('#fromDate').calendar({
+				current:fromTime,
+				onSelect:function(date){
+					fromTime.setFullYear(date.getFullYear());
+					fromTime.setMonth(date.getMonth());
+					fromTime.setDate(date.getDate());
+					createToDate();
+					setFromInputTime();
+				},
+				validator:function(date){
+					date.setHours(fromTime.getHours());
+					date.setMinutes(fromTime.getMinutes());
+					date.setSeconds(fromTime.getSeconds());
+					return date<=toTime;
+				}
+			})
+		}
+		
+		createFromDate();
+		setFromInputTime();
+		
+		function createToDate(){
+			$('#toDate').calendar({
+				current:toTime,
+				onSelect:function(date){
+					toTime.setFullYear(date.getFullYear());
+					toTime.setMonth(date.getMonth());
+					toTime.setDate(date.getDate());
+					createFromDate();
+					setToInputTime();
+				},
+				validator:function(date){
+					date.setHours(toTime.getHours());
+					date.setMinutes(toTime.getMinutes());
+					date.setSeconds(toTime.getSeconds());
+					return date>=fromTime;
+				}
+			});
+		}
+		
+		createToDate();
+		setToInputTime();
+		
+		function setToInputTime(){
+			var toInputTimeStr = getStrByDate(toTime);
+			$('#toTime').val(toInputTimeStr);
+		}
+		
+		function setFromInputTime(){
+			var fromInputTimeStr = getStrByDate(fromTime);
+			$('#fromTime').val(fromInputTimeStr)
+		}
+		
+		function setToTimeToNow(){
+			toTime = new Date();
+			setToInputTime();
+			createToDate();
+			createFromDate();
+		}
+		
+		function setFromTimeToNow(){
+			fromTime = new Date();
+			setFromInputTime();
+			createFromDate();
+			createToDate();
+		}
+		
+		function setToDateTimeOnBlur(){
+			var toDateTime = $('#toTime').val();
+			toDateTime = getDateByStr(toDateTime);
+			toTime = new Date(toDateTime);
+			createToDate();
+			createFromDate();
+		}
+		
+		function setFromDateTimeOnBlur(){
+			var fromDateTime = $('#fromTime').val();
+			fromDateTime = getDateByStr(fromDateTime);
+			fromTime = new Date(fromDateTime);
+			createFromDate();
+			createToDate();
+		}
+		
+		function setqueryTime(obj){
+			$('#queryTime').text(' '+obj.text);
+			querySn()
+			$('#datetimePicker').dialog('close');
+		}
+		
+		function setqueryTimeWhenTimeRange(){
+			$('#queryTime').text(' '+$('#fromTime').val()+' to '+$('#toTime').val());
+			querySn()
+			$('#datetimePicker').dialog('close');
+		}
+		
+		function push(){
+			var sn = $('#uploadSN').val();
+			var times = $('#times').val();
+			var frequency = $('#frequency').val();
+			if(isEmpty(sn)||isEmpty(times)||isEmpty(frequency)){
+				alert("值不能为空！！！");
+				return ;
+			}
+			lockHTML();
+			$.ajax({
+				type : "post",
+				url : "getNoCheat",
+				data : {
+					sn : sn,
+					times : times,
+					frequency : frequency
+				},
+				dataType : "json",
+				success : function(data) {
+					alert(data.returnMessage);
+					unlockHTML();
+				}
+			});
+			$('#pushPicker').dialog('close');
+		}
+	    /*]]>*/
+	</script>
+</body>
+</html>

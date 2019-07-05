@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="hbase" />
+        <module name="feign" />
+        <module name="untitled2" />
+        <module name="chipid" />
+        <module name="cdnLogs" />
+        <module name="EshopConsumer" />
+        <module name="tesserate" />
+        <module name="quransearch" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="aaa" target="1.8" />
+      <module name="cdnLogs" target="1.8" />
+      <module name="chipid" target="1.8" />
+      <module name="consumer" target="1.8" />
+      <module name="EshopConsumer" target="1.5" />
+      <module name="feign" target="1.8" />
+      <module name="hbase" target="1.5" />
+      <module name="HdfsDemo" target="1.8" />
+      <module name="HiveDemo" target="1.5" />
+      <module name="HiveDemo (1)" target="1.5" />
+      <module name="JdbcDemo" target="1.5" />
+      <module name="quransearch" target="1.8" />
+      <module name="tesserate" target="1.5" />
+      <module name="untitled1" target="6" />
+      <module name="untitled2" target="1.5" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="consumer" options="" />
+      <module name="hbase" options="" />
+    </option>
+  </component>
+</project>

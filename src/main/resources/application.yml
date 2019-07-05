@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: App
+  datasource:
+    druid:
+      url: jdbc:mysql://38.111.114.206:3306/cms?characterEncoding=utf-8&characterSetResults=utf-8&useUnicode=true&useSSL=false&autoReconnect=true
+      username: channelread
+      password: channelread!@#$%
+      driverClassName: com.mysql.jdbc.Driver
+      minIdle: 50
+      maxActive: 3000
+      maxWait: 600000
+
+  elasticsearch:
+    ip: 38.75.136.140:9200
+    user: elastic
+    password: mocean123
+      #        cdn:
+      #            ip: 192.240.98.154
+      #            port: 9300
+    #            cluster:
+    #                name: docker-cluster
+server:
+  port: 8989
+  connection-timeout: 60000
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+mybatis:
+  type-aliases-package: mocean.logs.domain
+  mapper-locations: classpath:Mapper/*.xml
+protocol:
+  scheme: https
+  port: 7989
+  tomcat:
+    accept-count: 1000
+    max-threads: 1000
+    max-connections: 2000
+  ssl:
+    key-store: /opt/httpskey/kserver.p12
+    key-store-password: 2aYwa9cE66yDwpqI%@mP
+    key-password: 2aYwa9cE66yDwpqI%@mP
+    keyStoreType: JKS
+    client-auth: true
+    trust-store: /opt/httpskey/tserver.keystore
+    trust-store-password: 2aYwa9cE66yDwpqI%@mP
+    trust-store-type: JKS

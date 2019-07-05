@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <meta name="description" content="" />
+    <meta name="author" content="ThemeBucket" />
+    <link rel="shortcut icon" href="#" type="image/png"></link>
+    <meta charset="UTF-8" />
+    <title>Cdn Rating</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css"
+          href="jquery-easyui-1.6.4/themes/bootstrap/easyui.css" />
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap-dropdown.js"></script>
+    <script type="text/javascript"
+            src="jquery-easyui-1.6.4/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="js/datagrid-detailview.js"></script>
+    <script type="text/javascript" src="js/datagrid-export.js"></script>
+    <script type="text/javascript" src="js/datagrid-filter.js"></script>
+    <style type="text/css">
+        #table_width {
+            width: 100%;
+        }
+
+        .datagrid-cell {
+            text-overflow: ellipsis;}
+    </style>
+</head>
+<body class="sticky-header">
+<section>
+    <!--<div th:include="header::header"></div>-->
+    <div class="container" id='table_width'>
+        <div id="dlg">
+            <table id="dlg-datagrid">
+            </table>
+        </div>
+        <div id="toolbar" class="btn-group">
+            <form class="form-inline">
+                <div class="form-group">
+
+                    <!--<input type="text" id="sn" name="searchUserName"
+                           class="form-control searchbyname-input"
+                           placeholder="Please enter the search SN" size="30%" />
+                    <input type="text" id="channel" name="searchChannel"
+                           class="form-control searchbyname-input"
+                           placeholder="Please enter the search Channel" size="40%" />-->
+
+
+                    <button type="button" class="form-control btn btn-default" onClick="modifyTimes()">
+                        <span class="glyphicon glyphicon-time" aria-hidden="true"></span><span id="queryTime"> All</span>
+                    </button>
+                    <button id="clear" type="button" value="Clear"
+                            class="btn btn-default searchbyname-button"
+                            onclick="resetFilter()">Clear
+                    </button>
+                    <button id="btn_search" type="button"
+                            class="btn btn-default searchbyname-button" value="search"
+                            onclick="querySn()">
+                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                    </button>
+                    <!--<button id="export" type="button" value="export"
+                            class="btn btn-default searchbyname-button"
+                            onclick="$('#table').datagrid('toExcel','rating.xls')">导出到Excel
+                    </button>-->
+
+                    <div style="float:right">
+                    <span id="showstarttime"></span>
+                    <span id="showstoptime"></span>
+                    </div>
+                    <div style="float:right">
+                        <a href="javascript:;" class="easyui-linkbutton" onclick="exportExcel()">ExportToExcel</a>
+                        <!--<a href="javascript:;" class="easyui-linkbutton" onclick="$('#table').datagrid('print','DataGrid')">Print</a>-->
+
+                    </div>
+
+                    <div id="datetimePicker" class="form-control" style="overflow: hidden;">
+                        <div class="easyui-tabs">
+                            <div title="Quick">
+                                <ul class="nav nav-sidebar">
+                                    <li><a href="javascript:void(0)" onClick="setqueryTime(this)">All</a></li>
+                                    <li><a href="javascript:void(0)" onClick="setqueryTime(this)">This hour</a></li>
+                                    <li><a href="javascript:void(0)" onClick="setqueryTime(this)">Today</a></li>
+                                    <li><a href="javascript:void(0)" onClick="setqueryTime(this)">Yesterday</a></li>
+                                    <li><a href="javascript:void(0)" onClick="setqueryTime(this)">This Week</a></li>
+                                    <li><a href="javascript:void(0)" onClick="setqueryTime(this)">This Month</a></li>
+                                    <li><a href="javascript:void(0)" onClick="setqueryTime(this)">This Year</a></li>
+                                </ul>
+                            </div>
+                            <div title="Absolute">
+                                <div>
+                                    <ul class="nav nav-sidebar">
+                                        <li style="display: inline-block;width:240px;"><span style="font-weight: bold;">From</span><span style="position: absolute;right: 10px"><a href="javascript:void(0)" onClick="setFromTimeToNow()">Set To Now</a></span></li>
+                                        <li style="display: inline-block;width:240px;"><span style="font-weight: bold;">To</span><span style="position: absolute;right: 10px"><a href="javascript:void(0)" onClick="setToTimeToNow()">Set To Now</a></span></li>
+                                    </ul>
+                                </div>
+                                <div class="form-group" style="height: 34px;margin-bottom: 0px">
+                                    <input id="fromTime" class="form-group searchbyname-input" onBlur="setFromDateTimeOnBlur()" style="width:240px;height: 34px" />
+                                    <input id="toTime" class="form-group searchbyname-input" onBlur="setToDateTimeOnBlur()" style="width:240px;height: 34px" />
+                                </div>
+                                <div id="fromDate" style="width:240px;display: inline-block;" ></div>
+                                <div id="toDate" style="width:240px;display: inline-block;"></div>
+                                <input class="btn btn-primary searchbyname-button" onClick="setqueryTimeWhenTimeRange()" type="button" value="GO" style="position: absolute;right: 10px;bottom: 10px;width:150px" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <table id="table"></table>
+    </div>
+</section>
+<script type="text/javascript" src="js/index.js"></script>
+<script type="text/javascript">
+
+
+    $('#cdn_rating').css('color','red')
+    /*$('#cdn_logs').css('color','#337ab7')
+    $('#cms_logs').css('color','#337ab7')
+    $('#client_logs').css('color','#337ab7')*/
+    var jsonStatusData = '{"total":15,"rows":[{"status":"200 OK!","status_grade":"正常","status_info":"连接正常"},{"status":"404 Not Found!","status_grade":"异常","status_info":"该 CDN 上无此节目"},{"status":"500 Internal Server Error!","status_grade":"异常","status_info":"该 CDN 内部错误"},{"status":"503 Live Interrupt!","status_grade":"异常","status_info":"该 CDN 上此节目目前中断"},{"status":"900 Black List!","status_grade":"异常","status_info":"该客户端已被拉黑"},{"status":"901 AuthInfo Out Of Date!","status_grade":"异常","status_info":"该客户端验证信息 AuthInfo 已过期"},{"status":"902 AuthInfo Not Match!","status_grade":"异常","status_info":"该客户端验证信息 AuthInfo 与 IP不匹配"},{"status":"903 AuthInfo Invalid!","status_grade":"异常","status_info":"该客户端验证信息 AuthInfo 无效"},{"status":"700 Request Timeout!","status_grade":"异常","status_info":"该客户端请求超时[5s]"},{"status":"701 Response Timeout!","status_grade":"异常","status_info":"该客户端响应超时[5s]"},{"status":"702 Streaming Timeout!","status_grade":"异常","status_info":"该客户端推流超时[40s]"},{"status":"703 Request Error! xxx","status_grade":"异常","status_info":"该客户端请求异常"},{"status":"704 Response Error! xxx","status_grade":"异常","status_info":"该客户端响应异常"},{"status":"705 Too Long Request!","status_grade":"异常","status_info":"该客户端请求头太长[3*1024B]"},{"status":"706 xxx!","status_grade":"正常","status_info":"该客户端断开连接"}]}';
+    $('#dlg').dialog({
+        title : '连接状态码和状态信息说明表',
+        width : 500,
+        height : 350,
+        closed : true,
+    });
+
+    $('#dlg-datagrid').datagrid({
+        fitColumns : true,
+    });
+    var statusJsonData = $.parseJSON(jsonStatusData);
+    $('#dlg-datagrid').datagrid('loadData',statusJsonData);
+
+    var fromTime = new Date();
+    var toTime = new Date();
+    var endTime;
+    var startTime;
+    $('#datetimePicker').dialog({
+        title : "Time Range",
+        width : 500,
+        height : 350,
+        closed : true,
+        resizable : true,
+        left : 1220,
+        top : 146,
+    });
+
+    function resetFilter(){
+        $('#sn').val('');
+        $('#channel').val('');
+        $('#queryTime').text(' All');
+        $('#showstarttime').text('');
+        $('#showstoptime').text('');
+    }
+
+    function modifyTimes(){
+        var datetimePicker = $('#datetimePicker');
+        if(datetimePicker.parent().is(":hidden")){
+            datetimePicker.dialog('open');
+            fromTime = new Date();
+            toTime = new Date();
+            createFromDate();
+            setFromInputTime();
+            createToDate();
+            setToInputTime();
+        }else{
+            datetimePicker.dialog('close');
+        }
+    }
+
+    /*<![CDATA[*/
+    function querySn() {
+        var queryTime = $('#queryTime').text();
+        var date = new Date();
+
+        if(queryTime==' Today'){
+            endTime = getStrByDate(date);
+            date.setHours(0);
+            date.setMinutes(0);
+            date.setSeconds(0);
+            startTime = getStrByDate(date);
+            $('#showstarttime').text(startTime).val();
+            $('#showstoptime').text(endTime).val();
+        }else if(queryTime== ' This hour'){
+            endTime = getStrByDate(date);
+            date.setMinutes(0);
+            date.setSeconds(0);
+            startTime = getStrByDate(date);
+            $('#showstarttime').text(startTime).val();
+            $('#showstoptime').text(endTime).val();
+        }else if(queryTime== ' All'){
+            startTime = 0;
+            endTime = 0;
+        }else if(queryTime== ' Yesterday'){
+            if(date.getDate()!=1){
+                date.setDate(date.getDate()-1);
+            }else {
+                date.setMonth(date.getMonth());
+                date.setDate(0);
+            }
+            date.setHours(23);
+            date.setMinutes(59);
+            date.setSeconds(59);
+            endTime = getStrByDate(date);
+            date.setHours(0);
+            date.setMinutes(0);
+            date.setSeconds(0);
+            startTime = getStrByDate(date);
+            $('#showstarttime').text(startTime).val();
+            $('#showstoptime').text(endTime).val();
+        }else if(queryTime== ' This Week'){
+            endTime = getStrByDate(date);
+            if(date.getDate()>date.getDay()){
+                date.setDate(date.getDate()-date.getDay());
+            }else {
+                var days = date.getDay();
+                var monthDay = date.getDate();
+                date.setMonth(date.getMonth());
+                date.setDate(0);
+                date.setDate(date.getDate()-(days-monthDay));
+            }
+            date.setHours(0);
+            date.setMinutes(0);
+            date.setSeconds(0);
+            startTime = getStrByDate(date);
+            $('#showstarttime').text(startTime).val();
+            $('#showstoptime').text(endTime).val();
+        }else if(queryTime== ' This Month'){
+            endTime = getStrByDate(date);
+            date.setDate(1)
+            date.setHours(0);
+            date.setMinutes(0);
+            date.setSeconds(0);
+            startTime = getStrByDate(date);
+            $('#showstarttime').text(startTime).val();
+            $('#showstoptime').text(endTime).val();
+        }else if(queryTime== ' This Year'){
+            endTime = getStrByDate(date);
+            date.setMonth(0);
+            date.setDate(1)
+            date.setHours(0);
+            date.setMinutes(0);
+            date.setSeconds(0);
+            startTime = getStrByDate(date);
+            $('#showstarttime').text(startTime).val();
+            $('#showstoptime').text(endTime).val();
+        }else{
+            var fromTimeStr = $('#fromTime').val();
+            startTime = fromTimeStr;
+            var toTimeStr = $('#toTime').val();
+            endTime = toTimeStr;
+            queryTime = '';
+            $('#showstarttime').text(startTime).val();
+            $('#showstoptime').text(endTime).val();
+        }
+        if(startTime!=0&&endTime!=0){
+            if(new Date(getDateByStr(startTime)).getTime()>new Date(getDateByStr(endTime)).getTime()){
+                alert('开始时间不能大于结束时间！！！');
+                return ;
+            }
+        }
+        $('#table').datagrid('reload', {
+            sn : $("#sn").val(),
+            startTime : startTime,
+            endTime : endTime,
+            channel : $('#channel').val(),
+
+        });
+    }
+    function createFromDate(){
+        $('#fromDate').calendar({
+            current:fromTime,
+            onSelect:function(date){
+                fromTime.setFullYear(date.getFullYear());
+                fromTime.setMonth(date.getMonth());
+                fromTime.setDate(date.getDate());
+                createToDate();
+                setFromInputTime();
+            },
+            validator:function(date){
+                date.setHours(fromTime.getHours());
+                date.setMinutes(fromTime.getMinutes());
+                date.setSeconds(fromTime.getSeconds());
+                return date<=toTime;
+            }
+        })
+    }
+
+    function createToDate(){
+        $('#toDate').calendar({
+            current:toTime,
+            onSelect:function(date){
+                toTime.setFullYear(date.getFullYear());
+                toTime.setMonth(date.getMonth());
+                toTime.setDate(date.getDate());
+                createFromDate();
+                setToInputTime();
+            },
+            validator:function(date){
+                date.setHours(toTime.getHours());
+                date.setMinutes(toTime.getMinutes());
+                date.setSeconds(toTime.getSeconds());
+                return date>=fromTime;
+            }
+        });
+    }
+
+    function setToInputTime(){
+        var toInputTimeStr = getStrByDate(toTime);
+        $('#toTime').val(toInputTimeStr);
+    }
+
+    function setFromInputTime(){
+        var fromInputTimeStr = getStrByDate(fromTime);
+        $('#fromTime').val(fromInputTimeStr)
+    }
+
+    function setToTimeToNow(){
+        toTime = new Date();
+        setToInputTime();
+        createToDate();
+        createFromDate();
+    }
+
+    function setFromTimeToNow(){
+        fromTime = new Date();
+        setFromInputTime();
+        createFromDate();
+        createToDate();
+    }
+
+    function setToDateTimeOnBlur(){
+        var toDateTime = $('#toTime').val();
+        toDateTime = getDateByStr(toDateTime);
+        toTime = new Date(toDateTime);
+        createToDate();
+        createFromDate();
+    }
+
+    function setFromDateTimeOnBlur(){
+        var fromDateTime = $('#fromTime').val();
+        fromDateTime = getDateByStr(fromDateTime);
+        fromTime = new Date(fromDateTime);
+        createFromDate();
+        createToDate();
+    }
+
+    function setqueryTime(obj){
+        $('#queryTime').text(' '+obj.text);
+        querySn()
+        $('#datetimePicker').dialog('close');
+    }
+
+    function setqueryTimeWhenTimeRange(){
+        $('#queryTime').text(' '+$('#fromTime').val()+' to '+$('#toTime').val());
+        $('#showstarttime').text($('#fromTime').val());
+        $('#showstoptime').text($('#toTime').val());
+        querySn()
+        $('#datetimePicker').dialog('close');
+    }
+
+    function exportExcel(){
+        if(startTime==0){
+            $('#table').datagrid('toExcel', 'all.xls');
+        }else{
+            $('#table').datagrid('toExcel', startTime+'-'+endTime+'.xls');
+        }
+
+    }
+
+
+    $('#table').datagrid(
+        {
+            title : 'Cdn - Rating',
+            fitColumns : true,
+            singleSelect : true,
+            striped : true,
+            pagination : true,
+            clientPaging: false,
+            sortName : 'current_Times',
+            sortOrder : 'desc',
+            pageSize : 20,
+            pageNumber : 1,
+            pageList : [ 10, 20, 30, 40, 50 ],
+            url : 'getRating',
+            columns: [[
+                {
+                    field : 'channel_id',
+                    title : 'channel_id',
+                    width : 100,//'5%',
+                    align : 'center',
+                    /*<![CDATA[*/
+                    formatter : function(value, row, index) {
+                        return getTitleExpandFFWhenRating(row,value);
+                    }
+                    /*]]>*/
+                },
+                {
+                    field : 'name',
+                    title : 'name',
+                    width : 100,//'8%',
+                    align : 'center',
+                    /*<![CDATA[*/
+                    formatter : function(value, row, index) {
+                        return getTitleExpandFFWhenRating(row,value);
+                    }
+                    /*]]>*/
+                },
+                {
+                    field : 'count',
+                    title : 'count',
+                    width : 100,//'8%',
+                    align : 'center',
+                    /*<![CDATA[*/
+                    formatter : function(value, row, index) {
+                        return getTitleExpandFFWhenRating(row,value);
+                    }
+                    /*]]>*/
+                },{
+                    field : 'num',
+                    title : 'num',
+                    width : 100,//'8%',
+                    align : 'center',
+                    /*<![CDATA[*/
+                    formatter : function(value, row, index) {
+                        return getTitleExpandFFWhenRating(row,value);
+                    }
+                    /*]]>*/
+                },
+            ] ],
+            onDblClickCell : function(index, field, value) {
+                var row = $('#table').parent().find('.datagrid-btable').find('tr').eq(index).find('.datagrid-cell-c2-' + field);
+                dataCopy(row);
+            },onBeforeLoad: function (param) {
+                var firstLoad = $(this).attr("firstLoad");
+                if (firstLoad == "false" || typeof (firstLoad) == "undefined"){
+                    $(this).attr("firstLoad","true");
+                    return false;
+                }
+                return true;
+            },
+            onLoadSuccess : function(){
+                var row = $('#table').parent().find('.datagrid-htable').find('tr').eq(0).find('.datagrid-cell-c2-note');
+                row.dblclick(function(){
+                    $('#dlg').dialog('open');
+                });
+            }
+        });
+    $('#table').datagrid('enableFilter');
+    querySn();
+</script>
+
+</body>
+</html>

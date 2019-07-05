@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://E:/BaiduNetdiskDownload/大数据/18-项目-大数据电商项目（真实企业项目）/第3部分：课件资料源码/第3部分：课件资料源码/项目第06天/bigdata/EshopConsumer/EshopConsumer.iml" filepath="E:/BaiduNetdiskDownload/大数据/18-项目-大数据电商项目（真实企业项目）/第3部分：课件资料源码/第3部分：课件资料源码/项目第06天/bigdata/EshopConsumer/EshopConsumer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cdnLogs.iml" filepath="$PROJECT_DIR$/cdnLogs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../cipid/chipid.iml" filepath="$PROJECT_DIR$/../cipid/chipid.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../feign/feign.iml" filepath="$PROJECT_DIR$/../feign/feign.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../hbase/hbase.iml" filepath="$PROJECT_DIR$/../hbase/hbase.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../quransearch/quransearch.iml" filepath="$PROJECT_DIR$/../quransearch/quransearch.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../tesserate/tesserate.iml" filepath="$PROJECT_DIR$/../tesserate/tesserate.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../untitled2/untitled2.iml" filepath="$PROJECT_DIR$/../untitled2/untitled2.iml" />
+    </modules>
+  </component>
+</project>

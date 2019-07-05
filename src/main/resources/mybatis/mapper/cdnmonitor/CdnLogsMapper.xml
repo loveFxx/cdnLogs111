@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mocean.logs.dao.CdnLogsMapper">
+	<insert id="saveCdnLogs"
+		parameterType="ArrayList">
+		insert into cdn_logs
+		(server_address,protocol,address,channel_id,authinfo,sn,note,user_agent,connect_status,connect_Times,stream_duration,stream_speed,stream_total_len,stream_lose_len,current_Times)
+		values
+		<foreach collection="list" item="item" separator="," index="index">
+			(#{item.server_address},#{item.protocol},#{item.address},#{item.channel_id},#{item.authinfo},#{item.sn},#{item.note},#{item.user_agent},#{item.connect_status},#{item.connect_Times},#{item.stream_duration},#{item.stream_speed},#{item.stream_total_len},#{item.stream_lose_len},#{item.current_Times})
+		</foreach>
+	</insert>
+	
+	<select id="getCdnLogsCount" parameterType="mocean.logs.util.PageBean" resultType="int">
+		select count(id) from (select id from cdn_logs where 1=1
+		<if test="sn_filter == 1">
+			and sn != ''
+		</if>
+		<if test="sn != null and sn != ''">
+			and sn = #{sn}
+		</if>
+		<if test="channel != null and channel != ''">
+			and channel_id = #{channel}
+		</if>
+		<if test="server_address != null and server_address != ''">
+			and server_address = #{server_address}
+		</if>
+		<if test="connect_status != -1">
+			and connect_status = #{connect_status}
+		</if>
+		<if test="sn_filter == 2">
+			and note not like '200%' and note not like '706%'
+		</if>
+		<if test="address != null and address != ''">
+			and address like '${address}%'
+		</if>
+		<if test="note != -1">
+			and note like '${note}%'
+		</if>
+		<if test="startTime != null">
+			and current_Times between #{startTime} and #{endTime}
+		</if>
+		limit #{totalSize}) a
+	</select>
+	
+	<select id="getCdnLogsList" parameterType="mocean.logs.util.PageBean" resultType="mocean.logs.domain.CdnLogsBean">
+		select id,sn,protocol,channel_id,authinfo,server_address,note,user_agent,address,connect_status,connect_Times,stream_duration,stream_speed,stream_total_len,stream_lose_len,current_Times from cdn_logs where 1=1
+		<if test="sn_filter == 1">
+			and sn != ''
+		</if>
+		<if test="sn != null and sn != ''">
+			and sn = #{sn}
+		</if>
+		<if test="channel != null and channel != ''">
+			and channel_id = #{channel}
+		</if>
+		<if test="server_address != null and server_address != ''">
+			and server_address = #{server_address}
+		</if>
+		<if test="connect_status != -1">
+			and connect_status = #{connect_status}
+		</if>
+		<if test="address != null and address != ''">
+			and address like '${address}%'
+		</if>
+		<if test="sn_filter == 2">
+			and note not like '200%' and note not like '706%'
+		</if>
+		<if test="note != -1">
+			and note like '${note}%'
+		</if>
+		<if test="startTime != null">
+			and current_Times between #{startTime} and #{endTime}
+		</if>
+		<if test="order != null">order by ${sort} ${order}</if>
+		<if test="start != null"> limit #{start},#{end}</if>
+	</select>
+	
+	<select id="getAllCount" resultType="int">
+		select table_rows from information_schema.tables where table_name = 'cdn_logs';
+	</select>
+	
+</mapper>

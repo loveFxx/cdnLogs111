@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<body>
+	<div th:fragment="header">
+		<div class="container" style="width: 98%; margin-left: 0.5%">
+			<div class="row clearfix">
+				<div class="col-md-12 column">
+					<nav class="navbar navbar-default" role="navigation">
+						<div class="collapse navbar-collapse"
+							id="bs-example-navbar-collapse-1">
+							<ul class="nav navbar-nav">
+								<li><a id="cdn_logs" href="cdnLogs"><span th:text="cdn_Logs"></span></a></li>
+								<li><a id="client_logs" href="clientLogs"><span th:text="client_Logs"></span></a></li>
+								<li><a id="cms_logs" href="cmsLogs"><span th:text="cms_Logs"></span></a></li>
+								<li><a id="cdn_rating" href="cdnRating"><span
+										th:text="Aut_Rating"></span></a></li>
+								<li><a id="gslb_logs" href="gslbLogs"><span th:text="gslb_Logs"></span></a></li>
+								<li id="logout"><a href="logout"><span th:text="LogOut"></span><strong></strong></a></li>
+							</ul>
+						</div>
+					</nav>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

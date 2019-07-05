@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mocean.logs.dao.VideoInfoMapper">
+	<insert id="saveVideoInfo" parameterType="ArrayList"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into client_logs_program_videoinfo
+		(playurl,cdnAddress,speed,resolution,videoFormat,audioFormat,startSwitchTime,startSetDataSourceTime,startPlayTime,playErrorCode,programId)
+		values
+		<foreach collection="list" item="item" separator="," index="index">
+			(#{item.playurl},#{item.cdnAddress},#{item.speed},#{item.resolution},#{item.videoFormat},#{item.audioFormat},#{item.startSwitchTime},#{item.startSetDataSourceTime},#{item.startPlayTime},#{item.playErrorCode},#{item.programId})
+		</foreach>
+	</insert>
+
+	<select id="getVideoInfoList" parameterType="int"
+		resultType="mocean.logs.domain.VideoInfoBean">
+		select
+		id,playurl,cdnAddress,speed,resolution,videoFormat,audioFormat,startSwitchTime,startSetDataSourceTime,startPlayTime,playErrorCode,programId
+		from client_logs_program_videoinfo
+		where programId=#{id}
+	</select>
+
+</mapper>

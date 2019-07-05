@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mocean.logs.dao.ClientLogsMapper">
+	<insert id="saveClientLogs"
+		parameterType="mocean.logs.domain.ClientLogsBean" useGeneratedKeys="true" keyProperty="id">
+		insert into client_logs(userId,sendTime,apkVersion,devicePlatform,systemVersion,pid,mid,cid,totalCpu,ftvCpu,totalMemory,freeMemory,ftvMemory,pingResult,isException) 
+		values
+		(#{userId},#{sendTime},#{apkVersion},#{devicePlatform},#{systemVersion},#{pid},#{mid},#{cid},#{totalCpu},#{ftvCpu},#{totalMemory},#{freeMemory},#{ftvMemory},#{pingResult},#{isException})
+	</insert>
+	
+	<!-- <resultMap type="mocean.cdnMonitor.domain.ClientLogsBean" id="clientLogsMaps">
+		<id column="id" property="id" />
+		<result column="sendTime" property="sendTime"  />
+		<result column="apkVersion" property="apkVersion"  />
+		<result column="devicePlatform" property="devicePlatform"  />
+		<result column="systemVersion" property="systemVersion"  />
+		<result column="pid" property="pid"  />
+		<result column="mid" property="mid"  />
+		<result column="cid" property="cid"  />
+		<result column="totalCpu" property="totalCpu"  />
+		<result column="ftvCpu" property="ftvCpu"  />
+		<result column="totalMemory" property="totalMemory"  />
+		<result column="freeMemory" property="freeMemory"  />
+		<result column="ftvMemory" property="ftvMemory"  />
+		<collection property="program" ofType="mocean.cdnMonitor.domain.ClientLogsProgramBean" column="id" select="getProgramList">
+		</collection>
+		<collection property="login" ofType="mocean.cdnMonitor.domain.ClientLogsLoginBean" column="id" select="getLoginList">
+		</collection>
+	</resultMap> -->
+	
+	<select id="findClientLogs" parameterType="mocean.logs.util.PageBean" resultType="mocean.logs.domain.ClientLogsBean">
+		select * from client_logs where 1=1 
+		<if test="userIds!=null and userIds.size() > 0">
+		and userId in
+			<foreach collection="userIds" item="userId" separator="," open="(" close=")">
+				#{userId}
+			</foreach>
+		</if>
+		<if test="startTime != null">
+			and sendTime &gt; #{startTime} and sendTime &lt; #{endTime}
+		</if>
+		<if test="sn_filter == 1">
+			and pingResult != ''
+		</if>
+		<if test="sn_filter == 2">
+			and isException = -1
+		</if>
+		<if test="pid != null">
+			and pid = #{pid} and cid = #{cid} and mid = #{mid}
+		</if>
+		<if test="order!=null">order by ${sort} ${order}</if>
+		<if test="start!=null"> limit #{start},#{end}</if>
+	</select>
+	
+	<!-- <select id="getProgramList" parameterType="int" resultType="mocean.cdnMonitor.domain.ClientLogsProgramBean">
+		select p.id as pid,p.name,p.playurl,p.cdnAddress,p.speed,p.resolution,p.videoFormat,p.audioFormat,p.startSwitchTime,p.startSetDataSourceTime,p.startPlayTime,p.playErrorCode,p.logsid
+		from client_logs_program p
+		where logsid=#{id}
+	</select>
+	
+	<select id="getLoginList" parameterType="int" resultType="mocean.cdnMonitor.domain.ClientLogsLoginBean">
+		select l.id as lid,l.requestName,l.url,l.returnCode,l.startTime,l.endTime,l.logsid
+		from client_logs_login l
+		where logsid=#{id}
+	</select> -->
+	
+	<select id="getClientLogsCount" parameterType="mocean.logs.util.PageBean" resultType="int">
+		select count(*) from client_logs where 1=1 
+		<if test="userIds!=null and userIds.size() > 0">
+		and userId in
+			<foreach collection="userIds" item="userId" separator="," open="(" close=")">
+				#{userId}
+			</foreach>
+		</if>
+		<if test="startTime != null">
+			and sendTime &gt; #{startTime} and sendTime &lt; #{endTime}
+		</if>
+		<if test="sn_filter == 1">
+			and pingResult != ''
+		</if>
+		<if test="sn_filter == 2">
+			and isException = -1
+		</if>
+		<if test="pid != null">
+			and pid = #{pid} and cid = #{cid} and mid = #{mid}
+		</if>
+	</select>
+	
+</mapper>

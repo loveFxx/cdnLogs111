@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mocean.logs.dao.ClientLogsLoginMapper">
+	<insert id="saveClientsLogsLogin"
+		parameterType="ArrayList" useGeneratedKeys="true" keyProperty="id">
+		insert into client_logs_login (requestName,url,startTime,endTime,returnCode,logsid)
+		values
+		<foreach collection="list" item="item" separator="," index="index">
+		 	(#{item.requestName},#{item.url},#{item.startTime},#{item.endTime},#{item.returnCode},#{item.logsid})
+		 </foreach>
+	</insert>
+	
+	<select id="getLoginList" parameterType="int" resultType="mocean.logs.domain.ClientLogsLoginBean">
+		select l.id,l.requestName,l.url,l.returnCode,l.startTime,l.endTime,l.logsid
+		from client_logs_login l
+		where logsid=#{id}
+	</select>
+	
+</mapper>

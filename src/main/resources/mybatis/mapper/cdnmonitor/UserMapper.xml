@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mocean.logs.dao.UserMapper">
+
+	<select id="login" parameterType="mocean.logs.domain.UserBean"
+		resultType="mocean.logs.domain.UserBean">
+		select * from cdn_user where username = #{username} and password = #{password} limit 1
+	</select>
+	
+	<select id="getUserList" parameterType="mocean.logs.util.PageBean" resultType="mocean.logs.domain.UserBean">
+		select * from cdn_user
+		<if test="order != null">order by ${sort} ${order}</if>
+		<if test="start != null"> limit #{start},#{end}</if>
+	</select>
+	
+	<select id="getUserCount" resultType="int">
+		select count(*) from cdn_user
+	</select>
+	
+	<update id="updatePwd" parameterType="mocean.logs.domain.UserBean">
+		update cdn_user set password = #{password} where username = #{username}
+	</update>
+	
+	<insert id="saveUser" parameterType="mocean.logs.domain.UserBean">
+		insert into cdn_user (username,password) values( #{username},#{password})
+	</insert>
+	
+	<select id="isUserNameExist" parameterType="String" resultType="mocean.logs.domain.UserBean">
+		select * from cdn_user where username = #{username}
+	</select>
+	
+</mapper>

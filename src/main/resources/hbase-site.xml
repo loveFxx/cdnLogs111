@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<configuration>
+    <!-- 使用完全分布式 -->
+    <property>
+        <name>hbase.cluster.distributed</name>
+        <value>false</value>
+    </property>
+
+    <!-- 指定hbase数据在hdfs上的存放路径 -->
+    <property>
+        <name>hbase.rootdir</name>
+        <value>hdfs://185.2.81.153:8020/hbase</value>
+    </property>
+    <!-- 配置zk地址 -->
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>185.2.81.153:2181</value>
+    </property>
+    <!-- zk的本地目录 -->
+    <property>
+        <name>hbase.zookeeper.property.dataDir</name>
+        <value>/home/centos/zookeeper</value>
+    </property>
+    <!--<property>
+        <name>hbase.coprocessor.region.classes</name>
+        <value>mocean.logs.hiveutil.CdnlogsRegionObserver</value>
+    </property>-->
+</configuration>

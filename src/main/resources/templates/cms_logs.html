@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta name="description" content="" />
+<meta name="author" content="ThemeBucket" />
+<link rel="shortcut icon" href="#" type="image/png"></link>
+<meta charset="UTF-8" />
+<title>CMS Logs</title>
+<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css"
+	href="jquery-easyui-1.6.4/themes/bootstrap/easyui.css" />
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/bootstrap-dropdown.js"></script>
+<script type="text/javascript"
+	src="jquery-easyui-1.6.4/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="js/datagrid-detailview.js"></script>
+<script type="text/javascript" src="js/datagrid-filter.js"></script>
+<style type="text/css">
+#table_width {
+	width: 98%;
+}
+
+.datagrid-cell {
+	text-overflow:ellipsis;           
+}
+
+.datagrid-filter-c input.datagrid-editable-input {
+	width:100%
+}
+
+</style>
+</head>
+<body>
+	<section>
+		<div th:include="header::header"></div>
+		<div class="container" id='table_width'>
+			<div id="toolbar" class="btn-group">
+				<form class="form-inline">
+					<div class="form-group">
+						<input type="text" id="sn" name="searchUserName"
+							class="form-control searchbyname-input"
+							placeholder="Please enter the search SN" size="30%" />
+						<button id="btn_search" type="button"
+							class="btn btn-default searchbyname-button" value="search"
+							onclick="querySn()">
+							<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+						</button>
+					</div>
+				</form>
+			</div>
+			<table id="table"></table>
+		</div>
+	</section>
+	<script type="text/javascript" src="js/index.js"></script>
+	<script>
+	$('#cdn_logs').css('color','#337ab7')
+	$('#cms_logs').css('color','red')
+	$('#cdn_admin_monitor').css('color','#337ab7')
+	$('#client_logs').css('color','#337ab7')
+		flag = false;
+		$('#table').datagrid(
+				{
+					title : 'CMS - Logs',
+					loadFilter : PagerFilter,
+					loadMsg : "正在加载数据，请稍等...",
+					fitColumns : true,
+					singleSelect : true,
+					striped : true,
+					pagination : true,
+					queryParams : {
+						sn : $("#sn").val(),
+					},
+					pageSize : 20,
+					url : 'getDetailBySn',
+					columns : [ [ {
+						field : 'interFace',
+						title : 'Interface',
+						width : '8%',
+						styler: function(value,row,index){
+							return 'width: 100px';
+						},
+						/*<![CDATA[*/
+						formatter : function(value, row, index) {
+							return getTitleExpandFFWhenCMS(value);
+						}
+						/*]]>*/
+					}, {
+						field : 'date',
+						title : 'Date',
+						width : '12%',
+						/*<![CDATA[*/
+						formatter : function(value, row, index) {
+							return getTitleExpandFFWhenCMS(value);
+						}
+						/*]]>*/
+					}, {
+						field : 'clientIp',
+						title : 'clientIp',
+						width : '12%',
+						/*<![CDATA[*/
+						formatter : function(value, row, index) {
+							return getTitleExpandFFWhenCMS(value);
+						}
+						/*]]>*/
+					}, {
+						field : 'message',
+						title : 'Url',
+						width : '48%',
+						/*<![CDATA[*/
+						formatter : function(value, row, index) {
+							return getTitleExpandFFWhenCMS(value);
+						}
+						/*]]>*/
+					}, {
+						field : 'decrypt',
+						title : 'Decrypt Url',
+						width : '20%',
+						editor : 'text',
+						/*<![CDATA[*/
+						formatter : function(value, row, index) {
+							return getTitleExpandFFWhenCMS(value);
+						}
+						/*]]>*/
+					} ] ],
+					onDblClickCell : function(index, field, value) {
+						if (field == 'message') {
+							var row = $('.datagrid-btable').eq(0).find('tr').eq(index).find('.datagrid-cell-c1-message');
+							dataCopy(row);
+						}
+					},onBeforeLoad : function(){
+						var sn = $('#sn').val();
+						if(sn==null){
+							return false;
+						}
+					}
+				});
+		$('#table').datagrid('enableFilter');
+
+		/*<![CDATA[*/
+		function PagerFilter(data) {
+			if (typeof data.length == 'number'
+					&& typeof data.splice == 'function') {
+				data = {
+					total : data.length,
+					rows : data
+				}
+			}
+			var dg = $(this);
+			var opts = dg.datagrid('options');
+			var pager = dg.datagrid('getPager');
+			pager.pagination({
+				onSelectPage : function(pageNum, pageSize) {
+					opts.pageNumber = pageNum;
+					opts.pageSize = pageSize;
+					pager.pagination('refresh', {
+						pageNumber : pageNum,
+						pageSize : pageSize
+					});
+					dg.datagrid('loadData', data);
+				}
+			});
+			if (!data.originalRows) {
+				data.originalRows = (data.rows);
+			}
+			var start = (opts.pageNumber - 1) * parseInt(opts.pageSize);
+			var end = start + parseInt(opts.pageSize);
+			data.rows = (data.originalRows.slice(start, end));
+			return data;
+		}
+
+		function querySn() {
+			flag = true;
+			$('#table').datagrid('reload', {
+				sn : $("#sn").val(),
+			});
+		}
+
+		/*]]>*/
+	</script>
+</body>
+
+
+</html>
